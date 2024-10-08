@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toefl Writing Simulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 10px;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .status {
+            margin-top: 10px;
+            font-size: 14px;
+            color: green;
+        }
+
+        .warning {
+            color: red;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            font-size: 16px;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            cursor: pointer;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body>
+        <header>
+                <a href="../index.html"><button>返回主页</button></a>
+        </header>
+    <h1>Teofl Writing Simulator</h1>
+    <textarea id="essay" spellcheck="false"></textarea>
+    <div class="status" id="status"></div>
+    <div class="status" id="wordCount">词数: 0</div>
+    <p align="left">
+        <button id="copyButton">Copy</button>
+        <button id="clearBtn">Clear</button>
+    </p>
+    
+
+    <script>
+        const CACHE_INTERVAL = 3000; 
+
+        function loadContent() {
+            const savedContent = localStorage.getItem('toeflEssay');
+            if (savedContent) {
+                document.getElementById('essay').value = savedContent;
+            }
+            updateCounts();
+        }
+
+        // 缓存内容到本地存储
+        function saveContent() {
+            const content = document.getElementById('essay').value;
+            localStorage.setItem('toeflEssay', content);
+        }
+        // clear
+        function clearContent() {
+            var clearyesorno = confirm("Clear the textbox?");
+        if(clearyesorno) {localStorage.clear();
+            document.getElementById('essay').value = '';
+            updateCounts();
+            clearyesorno = false;
+        }
+        }
+
+        // 复制内容到剪贴板
+        function copyContent() {
+            const textarea = document.getElementById('essay');
+            textarea.select();
+            document.execCommand('copy');
+            document.getElementById('status').textContent = '内容已复制到剪贴板！';
+        }
+
+        // 更新词数和字符数
+        function updateCounts() {
+            const text = document.getElementById('essay').value.trim();
+            const wordCount = text.split(/\s+/).filter(function(word) {
+                return word.length > 0;
+            }).length;
+
+            document.getElementById('wordCount').textContent = `词数: ${wordCount}`;
+        }
+
+        // 初始化
+        function init() {
+            loadContent();
+            saveContent();
+            setInterval(saveContent, CACHE_INTERVAL);
+            
+            document.getElementById('essay').addEventListener('input', updateCounts);
+        }
+
+
+        window.onload = init;
+
+        document.getElementById('copyButton').onclick = copyContent;
+        document.getElementById('clearBtn').onclick = clearContent; 
+    </script>
+
+</body>
+</html>

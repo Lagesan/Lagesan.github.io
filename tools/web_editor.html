@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="../obs_style.css">
+        <title>在线调试 Markdown/HTML</title>
+        <style>
+            body {
+                display: flex;
+                flex-direction: column;
+                background-color: rgb(245, 245, 245);
+                height: 100vh;
+                margin: 0;
+            }
+            header {
+                background: #004d99;
+                padding: 10px;
+                text-align: center;
+                border-bottom: 2px solid #ccc;
+            }
+            #main {
+                display: flex;
+                flex: 1;
+            }
+            #editor {
+                width: 50%;
+                padding: 10px;
+                border-right: 2px solid #ccc; /* 分割线 */
+                box-sizing: border-box;
+            }
+            #output {
+                width: 50%; /* 将宽度调整为50% */
+                height: 100%; /* 确保占满父容器的高度 */
+                padding: 10px;
+                box-sizing: border-box;
+            }
+            textarea {
+                width: 100%; /* 保证 textarea 的宽度 */
+                height: 70%;
+                resize: none; /* 不允许用户调整大小 */
+            }
+            iframe {
+                width: 100%; /* 保证 iframe 占满父容器宽度 */
+                height: 800px; /* 明确指定 iframe 高度 */
+                border: none; 
+            }
+        </style>
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> <!-- 引入 marked 库 -->
+    </head>
+<body>
+    <header>
+        <nav>
+            <a href="../index.html">OS主页</a>
+            <a href="../products.html">产品</a>
+            <a href="../developer.html">开发通道</a>
+            <a href="../index.html#contact">联系我们</a>
+        </nav>
+    </header>
+
+    <div id="main">
+        <div id="editor">
+            <h2>在线调试HTML/Markdown/网址</h2>
+            <label for="formatSelect">选择格式:</label>
+            <select id="formatSelect">
+                <option value="html">HTML</option>
+                <option value="markdown">Markdown</option>
+                <option value="url">访问</option>
+            </select>
+            <textarea id="inputArea" placeholder="在这里编写 Markdown、HTML 或网址..." spellcheck="false"></textarea>
+            <button id="runButton">运行</button>
+        </div>
+        <div id="output">
+            <h2>预览:</h2>
+            <div id="renderedOutput"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('runButton').addEventListener('click', function() {
+            const inputArea = document.getElementById('inputArea').value;
+            const format = document.getElementById('formatSelect').value;
+            let htmlContent;
+
+            if (format === 'markdown') {
+                htmlContent = marked.parse(inputArea); // 使用 marked 的 parse 方法进行 Markdown 转换
+            } else if (format === 'url') {
+                // 创建一个 iframe 显示链接内容
+                htmlContent = `<iframe src="${inputArea}"></iframe>`;
+            } else {
+                htmlContent = inputArea; // 如果是 HTML，直接输出
+            }
+
+            document.getElementById('renderedOutput').innerHTML = htmlContent;
+        });
+    </script>
+</body>
+</html>
