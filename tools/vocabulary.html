@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>单词错题本</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+  #wordList {
+    margin-top: 20px;
+  }
+  .word-item {
+    margin-bottom: 10px;
+  }
+  button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 18px;
+    text-decoration: none;
+    border-radius: 5px;
+    border-color: #007bff;
+    margin-left: 1%;
+}
+</style>
+</head>
+<body>
+    <a href="../products.html"><button>Previous</button></a>
+<div align="center">
+<h1>单词错题本</h1>
+<input type="text" id="wordInput" placeholder="输入单词">
+<input type="text" id="meaningInput" placeholder="输入释义">
+<button onclick="addWord()">添加</button>
+<ul id="wordList"></ul>
+</div>
+
+<script>
+function loadWords() {
+  const words = JSON.parse(localStorage.getItem('words')) || [];
+  words.sort((a, b) => b.tally - a.tally); // 降序排序
+  const wordList = document.getElementById('wordList');
+  wordList.innerHTML = '';
+  words.forEach(word => {
+    const listItem = document.createElement('li');
+    listItem.className = 'word-item';
+    listItem.innerHTML = `${word.word} - ${word.meaning} - 错误次数: ${word.tally}`;
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = '删除';
+    deleteButton.onclick = function() { deleteWord(word.id); }; // 使用word.id
+    const tallyButton = document.createElement('button');
+    tallyButton.textContent = '错误+1';
+    tallyButton.onclick = function() { tallyWord(word.id); }; // 使用word.id
+    listItem.appendChild(deleteButton);
+    listItem.appendChild(tallyButton);
+    wordList.appendChild(listItem);
+  });
+}
+
+// 添加单词到列表
+function addWord() {
+  const wordInput = document.getElementById('wordInput');
+  const meaningInput = document.getElementById('meaningInput');
+  const word = wordInput.value.trim();
+  const meaning = meaningInput.value.trim();
+  if (!word || !meaning) return;
+  
+  const words = JSON.parse(localStorage.getItem('words')) || [];
+  const newWord = { word: word, meaning: meaning, tally: 1, id: Date.now() }; // 使用时间戳作为唯一id
+  words.push(newWord);
+  localStorage.setItem('words', JSON.stringify(words));
+  loadWords();
+  wordInput.value = '';
+  meaningInput.value = '';
+}
+
+// 删除单词
+function deleteWord(id) {
+  const words = JSON.parse(localStorage.getItem('words'));
+  const newWords = words.filter(word => word.id !== id);
+  localStorage.setItem('words', JSON.stringify(newWords));
+  loadWords();
+}
+
+// 标记单词错误次数
+function tallyWord(id) {
+  const words = JSON.parse(localStorage.getItem('words'));
+  const updatedWords = words.map(word => {
+    if (word.id === id) {
+      return { ...word, tally: word.tally + 1 };
+    }
+    return word;
+  });
+  localStorage.setItem('words', JSON.stringify(updatedWords));
+  loadWords();
+}
+
+// 页面加载时加载单词
+window.onload = loadWords;
+</script>
+</body>
+</html>

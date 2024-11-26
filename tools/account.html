@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>班级美食节烧烤记账</title>
+<style>
+  body { font-family: Arial, sans-serif; }
+  .container { margin: 20px; }
+  input, button { margin: 5px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+  th { background-color: #f2f2f2; }
+  button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>班级美食节烧烤记账</h2>
+  <div>
+    <input type="text" id="itemName" placeholder="商品名称">
+    <input type="number" id="itemPrice" placeholder="商品价格" step="0.01">
+    <input type="number" id="itemQuantity" placeholder="商品数量">
+    <input type="text" id="itemNote" placeholder="备注（可选）">
+    <button onclick="addItem()">Add Item</button>
+  </div>
+  <table id="itemsTable">
+    <thead>
+      <tr>
+        <th>商品名称</th>
+        <th>商品价格</th>
+        <th>商品数量</th>
+        <th>小计</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+  <button onclick="clearItems()">Clear All Items</button>
+  <button onclick="refreshPrices()">Refresh Prices</button>
+  <button onclick="copyToClipboard()">复制分享数据</button>
+  <input type="text" id="importText" placeholder="Paste data here">
+  <button onclick="importData()">导入数据</button>
+  <div>
+    <h3>Total Price: <span id="totalPrice">0</span></h3>
+  </div>
+</div>
+
+<script>
+// 从localStorage加载数据
+window.onload = function() {
+  const items = JSON.parse(localStorage.getItem('items')) || [];
+  renderItems(items);
+};
+
+function addItem() {
+  const name = document.getElementById('itemName').value.trim();
+  const price = parseFloat(document.getElementById('itemPrice').value);
+  const quantity = parseInt(document.getElementById('itemQuantity').value, 10);
+  const note = document.getElementById('itemNote').value.trim();
+
+  if (name && !isNaN(price) && !isNaN(quantity) && quantity > 0) {
+    const item = { name, price, quantity, note };
+    const items = JSON.parse(localStorage.getItem('items')) || [];
+    items.push(item);
+    localStorage.setItem('items', JSON.stringify(items));
+    renderItems(items);
+    document.getElementById('itemName').value = '';
+    document.getElementById('itemPrice').value = '';
+    document.getElementById('itemQuantity').value = '';
+    document.getElementById('itemNote').value = '';
+    updateTotalPrice();
+  } else {
+    alert('请填写所有必填项，价格和数量必须是正数！');
+  }
+}
+
+function renderItems(items) {
+  const tableBody = document.getElementById('itemsTable').getElementsByTagName('tbody')[0];
+  tableBody.innerHTML = '';
+  items.forEach((item, index) => {
+    const row = tableBody.insertRow();
+    row.insertCell().textContent = item.name;
+    row.insertCell().textContent = item.price.toFixed(2);
+    row.insertCell().textContent = item.quantity;
+    row.insertCell().textContent = (item.price * item.quantity).toFixed(2);
+    const actionCell = row.insertCell();
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = '删除';
+    deleteButton.onclick = function() { removeItem(index); };
+    actionCell.appendChild(deleteButton);
+  });
+  updateTotalPrice();
+}
+
+function removeItem(index) {
+  const items = JSON.parse(localStorage.getItem('items'));
+  items.splice(index, 1);
+  localStorage.setItem('items', JSON.stringify(items));
+  renderItems(items);
+}
+
+function clearItems() {
+  if (confirm('确定要清除所有商品吗？')) {
+    localStorage.removeItem('items');
+    renderItems([]);
+  }
+}
+
+function refreshPrices() {
+  // 此函数可以根据需要进行更新，例如从外部接口获取最新价格
+}
+
+function updateTotalPrice() {
+  const items = JSON.parse(localStorage.getItem('items')) || [];
+  const total = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  document.getElementById('totalPrice').textContent = total.toFixed(2);
+}
+
+function copyToClipboard() {
+  const items = JSON.parse(localStorage.getItem('items')) || [];
+  const data = encodeURIComponent(JSON.stringify(items));
+  const textarea = document.createElement('textarea');
+  textarea.value = data;
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand('copy');
+  document.body.removeChild(textarea);
+  alert('数据已复制到剪贴板');
+}
+
+function importData() {
+  const importText = document.getElementById('importText').value;
+  try {
+    const items = JSON.parse(decodeURIComponent(importText));
+    const existingItems = JSON.parse(localStorage.getItem('items')) || [];
+    existingItems.push(...items);
+    localStorage.setItem('items', JSON.stringify(existingItems));
+    renderItems(existingItems);
+    updateTotalPrice();
+    alert('数据导入成功');
+  } catch (error) {
+    alert('数据格式错误，请确保粘贴正确的数据');
+  }
+}
+</script>
+</body>
+</html>
