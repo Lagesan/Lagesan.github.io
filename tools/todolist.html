@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Todo List</title>
+<style>
+  body { font-family: Arial, sans-serif; }
+  .container { margin: 20px; }
+  input, button { margin: 5px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+  th { background-color: #f2f2f2; }
+  button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>Todo List</h2>
+  <input type="text" id="todoItem" placeholder="添加新任务">
+  <button onclick="addTodoItem()">Add Task</button>
+  <table id="todosTable">
+    <thead>
+      <tr>
+        <th>任务</th>
+        <th>完成</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+  <button onclick="clearTodos()">Clear All Tasks</button>
+  <button onclick="copyToClipboard()">复制分享数据</button>
+  <button onclick="exportToDoFile()">Export to Todo File</button>
+  <input type="text" id="importText" placeholder="Paste data here">
+  <button onclick="importData()">导入数据</button>
+  <div>
+    <h3>Incomplete Tasks: <span id="incompleteTasks">0</span></h3>
+  </div>
+</div>
+
+<script>
+// 从localStorage加载数据
+window.onload = function() {
+  const todos = JSON.parse(localStorage.getItem('todos')) || [];
+  renderTodos(todos);
+};
+
+function addTodoItem() {
+  const todoText = document.getElementById('todoItem').value.trim();
+  if (todoText) {
+    const todo = { text: todoText, completed: false };
+    const todos = JSON.parse(localStorage.getItem('todos')) || [];
+    todos.push(todo);
+    localStorage.setItem('todos', JSON.stringify(todos));
+    renderTodos(todos);
+    document.getElementById('todoItem').value = '';
+    updateIncompleteTasks();
+  } else {
+    alert('请输入任务内容！');
+  }
+}
+
+function renderTodos(todos) {
+  const tableBody = document.getElementById('todosTable').getElementsByTagName('tbody')[0];
+  tableBody.innerHTML = '';
+  todos.forEach((todo, index) => {
+    const row = tableBody.insertRow();
+    row.insertCell().textContent = todo.text;
+    const completedCell = row.insertCell();
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = todo.completed;
+    checkbox.onclick = function() { toggleTodoCompletion(index); };
+    completedCell.appendChild(checkbox);
+    const actionCell = row.insertCell();
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = '删除';
+    deleteButton.onclick = function() { removeTodo(index); };
+    actionCell.appendChild(deleteButton);
+  });
+  updateIncompleteTasks();
+}
+
+function removeTodo(index) {
+  const todos = JSON.parse(localStorage.getItem('todos'));
+  todos.splice(index, 1);
+  localStorage.setItem('todos', JSON.stringify(todos));
+  renderTodos(todos);
+}
+
+function toggleTodoCompletion(index) {
+  const todos = JSON.parse(localStorage.getItem('todos'));
+  todos[index].completed = !todos[index].completed;
+  localStorage.setItem('todos', JSON.stringify(todos));
+  renderTodos(todos);
+  updateIncompleteTasks();
+}
+
+function clearTodos() {
+  if (confirm('确定要清除所有任务吗？')) {
+    localStorage.removeItem('todos');
+    renderTodos([]);
+  }
+}
+
+function updateIncompleteTasks() {
+  const todos = JSON.parse(localStorage.getItem('todos')) || [];
+  const incomplete = todos.filter(todo => !todo.completed).length;
+  document.getElementById('incompleteTasks').textContent = incomplete;
+}
+
+function copyToClipboard() {
+  const todos = JSON.parse(localStorage.getItem('todos')) || [];
+  const data = encodeURIComponent(JSON.stringify(todos));
+  const textarea = document.createElement('textarea');
+  textarea.value = data;
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand('copy');
+  document.body.removeChild(textarea);
+  alert('数据已复制到剪贴板');
+}
+
+function importData() {
+  const importText = document.getElementById('importText').value;
+  try {
+    const todos = JSON.parse(decodeURIComponent(importText));
+    const existingTodos = JSON.parse(localStorage.getItem('todos')) || [];
+    existingTodos.push(...todos);
+    localStorage.setItem('todos', JSON.stringify(existingTodos));
+    renderTodos(existingTodos);
+    updateIncompleteTasks();
+    alert('数据导入成功');
+  } catch (error) {
+    alert('数据格式错误，请确保粘贴正确的数据');
+  }
+}
+
+function exportToDoFile() {
+  const todos = JSON.parse(localStorage.getItem('todos')) || [];
+  const data = encodeURIComponent(JSON.stringify(todos));
+  const a = document.createElement('a');
+  a.href = `data:text/plain;charset=utf-8,${data}`;
+  a.download = 'todo.txt';
+  a.click();
+}
+</script>
+</body>
+</html>
