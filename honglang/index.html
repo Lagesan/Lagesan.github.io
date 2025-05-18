@@ -12,14 +12,15 @@
       height: 100%;
       font-family: Arial, sans-serif;
     }
+    
     .background {
       position: absolute;
       width: 100%;
       height: 100%;
-      background: url('base.jpeg') no-repeat center center;
-      background-size: cover;
+      background: url('base.jpeg') no-repeat center center/cover;
       z-index: 1;
     }
+    
     .draw-button {
       position: absolute;
       left: 50%;
@@ -27,8 +28,7 @@
       transform: translate(-50%, -50%);
       width: 200px;
       height: 60px;
-      background: url('button.png') no-repeat center center;
-      background-size: contain;
+      background: url('button.png') no-repeat center center/contain;
       cursor: pointer;
       z-index: 10;
       border: none;
@@ -38,14 +38,17 @@
       text-align: center;
       line-height: 60px;
       text-shadow: 0 0 5px rgba(0,0,0,0.8);
-    }
-    .draw-button:hover {
-      transform: translate(-50%, -50%) scale(1.05);
       transition: transform 0.2s;
     }
+    
+    .draw-button:hover {
+      transform: translate(-50%, -50%) scale(1.05);
+    }
+    
     .draw-button:active {
       transform: translate(-50%, -50%) scale(0.95);
     }
+    
     .title {
       position: absolute;
       top: 20px;
@@ -57,10 +60,11 @@
       text-shadow: 0 0 10px rgba(0,0,0,0.8);
       z-index: 5;
     }
+    
     #mask {
       position: fixed;
-      left: 0;
       top: 0;
+      left: 0;
       right: 0;
       bottom: 0;
       background: rgba(0, 0, 0, 0.7);
@@ -73,166 +77,146 @@
       cursor: pointer;
       user-select: none;
     }
+    
     #video-layer {
       display: none;
       position: fixed;
-      left: 0;
       top: 0;
+      left: 0;
       width: 100vw;
       height: 100vh;
       z-index: 2000;
       background: #000;
     }
+    
     #in-video {
       width: 100vw;
       height: 100vh;
       object-fit: cover;
       display: block;
     }
+    
     .button-detail {
       position: absolute;
-      left: 40px;      /* 距离左边40px */
-      bottom: 40px;    /* 距离底部40px */
-      padding: 4px 40px; /* 高度更扁，减少垂直填充 */
+      left: 40px;
+      bottom: 40px;
+      padding: 4px 40px;
       font-size: 16px;
       color: white;
-      background-color: rgba(0, 0, 0, 0.6); /* 悬停时颜色变深 */
+      background-color: rgba(0, 0, 0, 0.6);
       border: 5px solid rgba(215, 215, 215, 0.01);
-      border-radius: 0;
       cursor: pointer;
-      transition: background-color 0.3s, transform 0.3s; /* 平滑颜色和变形变化 */
-      display: inline-block;
+      transition: background-color 0.3s, transform 0.3s;
       text-align: center;
       text-decoration: none;
-      z-index: 20;     /* 保证在上层 */
+      z-index: 20;
     }
-
+    
     .button-detail:hover {
-      transform: scale(1.05); /* 悬停时放大 */
+      transform: scale(1.05);
     }
-    #detail-mask .button-detail:hover {
-      background: #17b076a3;
-      border-color: #17b076a3;
-      color: #19f9a4; /* 保持文字原色 */
-      }
-
-    /* 详情遮罩层样式 */
+    
     #detail-mask {
       display: none;
       position: fixed;
-      left: 0; top: 0; right: 0; bottom: 0;
-      background: rgba(16, 22, 32, 0.853); /* 修改为半透明黑色 */
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(16, 22, 32, 0.962);
       z-index: 3000;
       align-items: center;
       justify-content: center;
     }
-
+    
     #detail-mask.active {
       display: flex;
     }
-
+    
     #detail-mask .detail-content {
       display: flex;
       flex-direction: column;
       align-items: center;
     }
-    #detail-mask .button-detail {
-      display: inline-block;
-      left: unset;
-      bottom: unset;
-    }
-
+    
     #detail-mask .button-detail {
       position: relative;
       overflow: hidden;
-      border-style: solid;
-      border-width: 1px 1px 2px 1px;
-      border-color: #19f9a4;
+      border: 1px solid #19f9a4;
+      border-bottom-width: 2px;
       color: #19f9a4;
       background: transparent;
       font-size: 16px;
-      display: block;
-      margin: 24px auto 16px auto;
-      position: absolute;
+      margin: 24px auto 16px;
       left: 50%;
       transform: translateX(-50%);
       bottom: 16px;
       padding: 6px 55px;
-      border-radius: 0;
-      box-sizing: border-box;
       transition: background 0.3s;
     }
-
-#detail-mask .button-detail:hover,
-#detail-mask .button-detail.animating {
-  background: #17b076a3;
-  border-color: #17b076a3;
-  color: #19f9a4;
-}
-
-#detail-mask .button-detail .click-anim {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  width: 40px; /* 初始宽度 */
-  height: 100%;
-  background: rgba(25, 249, 164, 0.45);
-  transform: translateX(-50%);
-  pointer-events: none;
-  z-index: 1;
-  border-radius: 5px;
-  animation: click-expand 0.15s ease forwards;
-}
-
-@keyframes click-expand {
-  from {
-    width: 40px;
-    opacity: 1;
-  }
-  to {
-    width: 100%;
-    opacity: 0.7;
-  }
-}
-
-.detail-box {
-  width: 600px;
-  height: 500px;
-  background: #2b2b2b;
-  border: 1.5px solid #4a4a4a;
-  border-radius: 0;
-  margin-bottom: 24px; /* 更小的底部间距 */
-  box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.77);
-  transform-origin: center;
-  transform: scaleX(0.2);
-  animation: box-expand 0.3s ease forwards; /* 去掉延迟，和线同时 */
-  transition: background 0.3s;
-}
-.detail-box::before {
-  content: "";
-  display: block;
-  position: absolute;
-  /* top: -10px; 距离box顶部的距离，可调整 */
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, #fff, #eee 60%, #fff);
-  border-radius: 0;
-  opacity: 0.9;
-  animation: line-expand 0.3s ease forwards; /* 动画时间和box一致 */
-}
-
-@keyframes box-expand {
-  from { transform: scaleX(0.2);}
-  to   { transform: scaleX(1);}
-}
+    
+    #detail-mask .button-detail:hover,
+    #detail-mask .button-detail.animating {
+      background: #17b076a3;
+      border-color: #17b076a3;
+      color: #19f9a4;
+    }
+    
+    #detail-mask .button-detail .click-anim {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: 40px;
+      height: 100%;
+      background: rgba(25, 249, 164, 0.45);
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 1;
+      border-radius: 5px;
+      animation: click-expand 0.15s ease forwards;
+    }
+    
+    @keyframes click-expand {
+      to {
+        width: 100%;
+        opacity: 0.7;
+      }
+    }
+    
+    .detail-box {
+      width: 600px;
+      height: 500px;
+      background: #313131b1;
+      border: 1.5px solid #4a4a4a;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.77);
+      transform-origin: center;
+      transform: scaleX(0.2);
+      animation: box-expand 0.3s ease forwards;
+    }
+    
+    .detail-box::before {
+      content: "";
+      display: block;
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, #fff, #eee 60%, #fff);
+      opacity: 0.9;
+      animation: line-expand 0.3s ease forwards;
+    }
+    
+    @keyframes box-expand {
+      to { transform: scaleX(1); }
+    }
   </style>
 </head>
 <body>
   <div class="background"></div>
   <div id="mask">点击进入抽卡</div>
   <div class="title"></div>
-  <button class="draw-button" onclick="draw()"></button>
+  <button class="draw-button"></button>
   <button id="detailButton" class="button-detail">详情</button>
 
   <div id="video-layer">
@@ -244,217 +228,240 @@
   <div id="detail-mask">
     <div class="detail-content">
       <div class="detail-box">
-        <button id="detail-ok" class="button-detail" style="opacity:0;pointer-events:none;transition:opacity 0.15s;">确定</button>
+        <button id="detail-ok" class="button-detail" style="opacity:0;pointer-events:none;transition:opacity 0.15s; position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%);">确定</button>
       </div>
     </div>
   </div>
 
 <script>
-    let presskey = false;
-  let audioStarted = false;
-  let outroPlayed = false;
-  let drawing = false;
-
-  let intro = new Audio('intro.wav');
-  let main = new Audio('main.ogg');
-  let outro = new Audio('outro.ogg');
-
-  main.loop = true;
-  intro.load();
-  main.load();
-  outro.load();
-
-  window.onload = function () {
-    const video = document.getElementById('in-video');
-    const videoLayer = document.getElementById('video-layer');
-
-    // 屏蔽所有默认交互
-    video.oncontextmenu = e => e.preventDefault();
-    ['dragstart','selectstart','mousedown','mouseup','mousemove','focus','keydown','keypress','keyup','dblclick']
-      .forEach(evt => video.addEventListener(evt, e => e.preventDefault()));
-
-    video.addEventListener('timeupdate', function () {
-      // 视频第4秒时静音背景音乐
-      if (video.currentTime >= 4 && !intro.muted) {
-        intro.muted = true;
-        main.muted = true;
-      }
-
-      // 提前1秒播放outro
-      if (!outroPlayed && video.duration - video.currentTime <=0.35) {
-        outroPlayed = true;
-        outro.currentTime = 0;
-        outro.muted = false;
-        outro.play().catch(e => console.error("提前播放outro失败:", e));
-      }
-    });
-
-    video.addEventListener('ended', function () {
-      video.pause();
-      video.currentTime = video.duration;
-      intro.pause();
-      main.pause();
-      drawing = false; // 允许再次触发
-    });
-
-    outro.addEventListener('ended', function () {
-      outroPlayed = false;
-      presskey = true;
-      // 恢复主背景音乐流程
-      intro.currentTime = 0;
-      main.currentTime = 0;
-      intro.muted = false;
-      main.muted = false;
-
-      intro.play().then(() => {
-        intro.onended = () => main.play().catch(e => console.error("main播放失败:", e));
-      }).catch(e => console.error("intro播放失败:", e));
-
-      document.getElementById('video-layer').style.display = 'none';
-    });
+  // 全局状态
+  const state = {
+    presskey: false,
+    audioStarted: false,
+    outroPlayed: false,
+    drawing: false
   };
 
-  function startAudio() {
-    if (audioStarted) return;
-    audioStarted = true;
+  // 音频元素
+  const audio = {
+    intro: new Audio('intro.wav'),
+    main: new Audio('main.ogg'),
+    outro: new Audio('outro.ogg')
+  };
 
-    intro.currentTime = 0;
-    main.currentTime = 0;
-    outro.currentTime = 0;
-    intro.muted = false;
-    main.muted = false;
+  // DOM 元素缓存
+  const elements = {
+    video: document.getElementById('in-video'),
+    videoLayer: document.getElementById('video-layer'),
+    mask: document.getElementById('mask'),
+    drawButton: document.querySelector('.draw-button'),
+    detailButton: document.getElementById('detailButton'),
+    detailMask: document.getElementById('detail-mask'),
+    detailOk: document.getElementById('detail-ok')
+  };
 
-    // 先解锁音频播放权限
-    outro.muted = true;
-    outro.play().then(() => {
-      outro.pause();
-      outro.currentTime = 0;
-      outro.muted = false;
-
-      intro.play().then(() => {
-        intro.onended = () => main.play().catch(e => console.error("main播放失败:", e));
-      }).catch(e => console.error("intro播放失败:", e));
-    }).catch(() => {
-      intro.play().then(() => {
-        intro.onended = () => main.play().catch(e => console.error("main播放失败:", e));
-      }).catch(e => console.error("intro播放失败:", e));
-    });
+  // 初始化音频
+  function initAudio() {
+    audio.main.loop = true;
+    audio.intro.load();
+    audio.main.load();
+    audio.outro.load();
   }
-  const button = document.getElementById('detailButton');
 
-  function requestFullScreen() {
-    const elem = document.documentElement;
-    if (elem.requestFullscreen) {
-      elem.requestFullscreen();
-    } else if (elem.webkitRequestFullscreen) {
-      elem.webkitRequestFullscreen();
-    } else if (elem.msRequestFullscreen) {
-      elem.msRequestFullscreen();
+  // 视频事件处理
+  function setupVideoEvents() {
+    const videoEvents = ['dragstart', 'selectstart', 'mousedown', 'mouseup', 'mousemove', 'focus', 'keydown', 'keypress', 'keyup', 'dblclick'];
+    videoEvents.forEach(evt => {
+      elements.video.addEventListener(evt, e => e.preventDefault());
+    });
+
+    elements.video.addEventListener('timeupdate', handleVideoTimeUpdate);
+    elements.video.addEventListener('ended', handleVideoEnded);
+    audio.outro.addEventListener('ended', handleOutroEnded);
+  }
+
+  function handleVideoTimeUpdate() {
+    // 视频第4秒时静音背景音乐
+    if (this.currentTime >= 4 && !audio.intro.muted) {
+      audio.intro.muted = true;
+      audio.main.muted = true;
+    }
+
+    // 提前1秒播放outro
+    if (!state.outroPlayed && this.duration - this.currentTime <= 0.35) {
+      state.outroPlayed = true;
+      audio.outro.currentTime = 0;
+      audio.outro.muted = false;
+      audio.outro.play().catch(e => console.error("提前播放outro失败:", e));
     }
   }
 
+  function handleVideoEnded() {
+    this.pause();
+    this.currentTime = this.duration;
+    audio.intro.pause();
+    audio.main.pause();
+    state.drawing = false;
+  }
+
+  function handleOutroEnded() {
+    state.outroPlayed = false;
+    state.presskey = true;
+    
+    // 恢复主背景音乐流程
+    audio.intro.currentTime = 0;
+    audio.main.currentTime = 0;
+    audio.intro.muted = false;
+    audio.main.muted = false;
+
+    audio.intro.play().then(() => {
+      audio.intro.onended = () => audio.main.play().catch(e => console.error("main播放失败:", e));
+    }).catch(e => console.error("intro播放失败:", e));
+
+    elements.videoLayer.style.display = 'none';
+  }
+
+  // 音频启动
+  function startAudio() {
+    if (state.audioStarted) return;
+    state.audioStarted = true;
+
+    audio.intro.currentTime = 0;
+    audio.main.currentTime = 0;
+    audio.outro.currentTime = 0;
+    audio.intro.muted = false;
+    audio.main.muted = false;
+
+    // 先解锁音频播放权限
+    audio.outro.muted = true;
+    audio.outro.play().then(() => {
+      audio.outro.pause();
+      audio.outro.currentTime = 0;
+      audio.outro.muted = false;
+
+      audio.intro.play().then(() => {
+        audio.intro.onended = () => audio.main.play().catch(e => console.error("main播放失败:", e));
+      }).catch(e => console.error("intro播放失败:", e));
+    }).catch(() => {
+      audio.intro.play().then(() => {
+        audio.intro.onended = () => audio.main.play().catch(e => console.error("main播放失败:", e));
+      }).catch(e => console.error("intro播放失败:", e));
+    });
+  }
+
+  // 全屏功能
+  function requestFullScreen() {
+    const elem = document.documentElement;
+    const requestMethod = elem.requestFullscreen || 
+                         elem.webkitRequestFullscreen || 
+                         elem.msRequestFullscreen;
+    
+    if (requestMethod) {
+      requestMethod.call(elem);
+    }
+  }
+
+  // 抽卡功能
   function draw() {
-    if (drawing) return; // 视频播放期间不能再次触发
-    drawing = true;
+    if (state.drawing) return;
+    state.drawing = true;
 
-    const videoLayer = document.getElementById('video-layer');
-    const video = document.getElementById('in-video');
+    elements.videoLayer.style.display = 'block';
+    elements.video.currentTime = 0;
+    elements.video.muted = false;
+    state.outroPlayed = false;
+    elements.video.play().catch(e => console.error("无法播放视频:", e));
 
-    videoLayer.style.display = 'block';
-    video.currentTime = 0;
-    video.muted = false;
-    outroPlayed = false;
-    video.play().catch(e => console.error("无法播放视频:", e));
-
-    // 恢复音量状态（可能之前被静音）
-    intro.muted = false;
-    main.muted = false;
+    // 恢复音量状态
+    audio.intro.muted = false;
+    audio.main.muted = false;
 
     startAudio();
   }
 
-  // 按钮和回车都可以触发 draw()
-  document.querySelector('.draw-button').onclick = draw;
+  // 详情遮罩层功能
+  function showDetailMask() {
+    elements.detailMask.classList.add('active');
+    const box = elements.detailMask.querySelector('.detail-box');
+    
+    // 重新触发动画
+    box.style.animation = 'none';
+    void box.offsetWidth; // 触发重绘
+    box.style.animation = '';
+    
+    // 延迟显示确定按钮
+    elements.detailOk.style.opacity = '0';
+    elements.detailOk.style.pointerEvents = 'none';
+    setTimeout(() => {
+      elements.detailOk.style.opacity = '1';
+      elements.detailOk.style.pointerEvents = '';
+    }, 150);
+  }
 
-  document.getElementById('mask').onclick = function () {
-    this.style.display = 'none';
-    requestFullScreen();
-    startAudio();
-  };
+  function hideDetailMask() {
+    elements.detailMask.classList.remove('active');
+    elements.detailOk.style.opacity = '0';
+    elements.detailOk.style.pointerEvents = 'none';
+  }
 
-  document.addEventListener('keydown', function (event) {
+  function handleDetailOkClick(e) {
+    if (elements.detailOk.classList.contains('gray')) return;
+
+    // 创建动画元素
+    const anim = document.createElement('span');
+    anim.className = 'click-anim';
+    elements.detailOk.appendChild(anim);
+
+    elements.detailOk.classList.add('animating');
+
+    anim.addEventListener('animationend', function() {
+      anim.remove();
+      elements.detailOk.classList.remove('animating');
+      elements.detailOk.classList.add('gray');
+      setTimeout(() => {
+        elements.detailOk.classList.remove('gray');
+        hideDetailMask();
+      }, 80);
+    });
+  }
+
+  // 键盘事件处理
+  function handleKeyDown(event) {
+    if (elements.detailMask.classList.contains('active')) {
+      if (event.code === 'Space' || event.key === ' ' || event.code === 'Enter' || event.key === 'Enter') {
+        event.preventDefault();
+        if (elements.detailOk.style.opacity === '1' && !elements.detailOk.classList.contains('gray')) {
+          elements.detailOk.click();
+        }
+      }
+      return;
+    }
+    
     if (event.key === 'Enter') {
       draw();
     }
-  });
+  }
 
-    // 详情遮罩层相关
-    const detailMask = document.getElementById('detail-mask');
-    const detailOk = document.getElementById('detail-ok');
-    const detailButton = document.getElementById('detailButton');
-
-    // 显示遮罩层
-    detailButton.addEventListener('click', function() {
-      detailMask.classList.add('active');
-      // 重新触发动画
-      const box = detailMask.querySelector('.detail-box');
-      box.style.animation = 'none';
-      // 触发重绘
-      void box.offsetWidth;
-      box.style.animation = '';
-      // 0.15s后显示确定按钮
-      detailOk.style.opacity = '0';
-      detailOk.style.pointerEvents = 'none';
-      setTimeout(() => {
-        detailOk.style.opacity = '1';
-        detailOk.style.pointerEvents = '';
-      }, 150);
+  // 初始化
+  function init() {
+    initAudio();
+    setupVideoEvents();
+    
+    // 事件绑定
+    elements.drawButton.addEventListener('click', draw);
+    elements.mask.addEventListener('click', () => {
+      elements.mask.style.display = 'none';
+      requestFullScreen();
+      startAudio();
     });
+    
+    elements.detailButton.addEventListener('click', showDetailMask);
+    elements.detailOk.addEventListener('click', handleDetailOkClick);
+    document.addEventListener('keydown', handleKeyDown);
+  }
 
-    // 隐藏遮罩层
-    function hideDetailMask() {
-      detailMask.classList.remove('active');
-      detailOk.style.opacity = '0';
-      detailOk.style.pointerEvents = 'none';
-    }
-    detailOk.addEventListener('click', function(e) {
-      if (detailOk.classList.contains('gray')) return;
-
-      // 创建动画元素
-      const anim = document.createElement('span');
-      anim.className = 'click-anim';
-      detailOk.appendChild(anim);
-
-      // 让按钮变灰前，先加 animating 保持绿色底色
-      detailOk.classList.add('animating');
-
-      anim.addEventListener('animationend', function() {
-        anim.remove();
-        detailOk.classList.remove('animating');
-        detailOk.classList.add('gray');
-        setTimeout(() => {
-          detailOk.classList.remove('gray');
-          hideDetailMask();
-        }, 80);
-      });
-    });
-
-    // 空格或Enter关闭遮罩层，只触发确定按钮
-    document.addEventListener('keydown', function(event) {
-      if (detailMask.classList.contains('active')) {
-        if (
-          event.code === 'Space' || event.key === ' ' ||
-          event.code === 'Enter' || event.key === 'Enter'
-        ) {
-          event.preventDefault();
-          if (detailOk.style.opacity === '1' && !detailOk.classList.contains('gray')) {
-            detailOk.click();
-          }
-        }
-        return; // 遮罩层显示时，阻止其它按键（如抽卡）
-      }
-    });
-
+  // 启动应用
+  window.onload = init;
 </script>
 </body>
 </html>
