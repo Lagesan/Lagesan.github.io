@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COMPROMISED</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: radial-gradient(circle at center, #000000 60%, #120000 100%);
+    color: red;
+    font-family: 'Courier New', monospace;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .flicker {
+    font-size: 2.2rem;
+    text-align: center;
+    animation: flicker 1.5s infinite alternate;
+  }
+
+  .evil {
+    color: #ff1a1a;
+    animation: flicker 0.7s infinite alternate;
+  }
+
+  @keyframes flicker {
+    0%, 18%, 22%, 25%, 53%, 57%, 100% {
+      opacity: 1;
+      text-shadow:
+        0 0 7px #ff0000,
+        0 0 10px #ff0000,
+        0 0 21px #ff0000,
+        0 0 42px #ff3300,
+        0 0 82px #ff3300,
+        0 0 92px #ff3300;
+    }
+    20%, 24%, 55% {
+      opacity: 0.4;
+      text-shadow: none;
+    }
+  }
+
+  .laugh {
+    font-size: 1.8rem;
+    color: #ff3;
+    margin-top: 30px;
+    text-shadow: 0 0 15px #ff3, 0 0 25px #ff6;
+    animation: laughAnim 1.2s infinite alternate;
+  }
+
+  @keyframes laughAnim {
+    0% { transform: scale(1) rotate(0deg); opacity: 0.8; }
+    100% { transform: scale(1.2) rotate(3deg); opacity: 1; color: #f00; }
+  }
+
+  /* optional glitchy background effect */
+  .bg-glitch {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 0, 0, 0.05) 0px,
+      rgba(0, 0, 0, 0.05) 2px,
+      rgba(0, 0, 0, 0.05) 4px
+    );
+    animation: glitch 0.15s infinite;
+    z-index: -1;
+  }
+
+  @keyframes glitch {
+    0% { transform: translate(0, 0); }
+    50% { transform: translate(2px, -2px); }
+    100% { transform: translate(-1px, 1px); }
+  }
+</style>
+</head>
+<body>
+  <div class="bg-glitch"></div>
+  <div class="flicker"><span style="color:#ff3">YOUR DEVICE HAS BEEN </span><br><span class="evil">COMPROMISED</span>.</div>
+  <div class="flicker"><span style="color:#ff3">YOUR DATA HAS BEEN SOLD TO </span><br><span class="evil">EVIL BUSINESS.</span></div>
+  <div class="laugh">MWUAHAHAHA 💀</div>
+</body>
+</html>
