@@ -17,6 +17,8 @@
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    /* 增加一个指示，让用户知道需要点击 */
+    cursor: pointer;
   }
 
   .flicker {
@@ -86,6 +88,24 @@
   <div class="bg-glitch"></div>
   <div class="flicker"><span style="color:#ff3">YOUR DEVICE HAS BEEN </span><br><span class="evil">COMPROMISED</span>.</div>
   <div class="flicker"><span style="color:#ff3">YOUR DATA HAS BEEN SOLD TO </span><br><span class="evil">EVIL BUSINESS.</span></div>
-  <div class="laugh">MWUAHAHAHA 💀</div>
+  <div class="laugh">MWUAHAHAHA😂</div>
+  <script>
+    function openFullscreen() {
+      const element = document.documentElement;
+
+      if (element.requestFullscreen) {
+        element.requestFullscreen();
+      } else if (element.webkitRequestFullscreen) {
+        element.webkitRequestFullscreen();
+      } else if (element.msRequestFullscreen) {
+        element.msRequestFullscreen();
+      }
+    }
+    document.addEventListener('click', function() {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        openFullscreen();
+      }
+    }, { once: true });
+  </script>
 </body>
 </html>
