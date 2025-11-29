@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOEFL AI Trainer (2025 Ultra Edition)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .markdown-body h1 { font-size: 1.5em; font-weight: bold; margin-bottom: 0.5em; }
+        .markdown-body h2 { font-size: 1.25em; font-weight: bold; margin-bottom: 0.5em; }
+        .markdown-body p { margin-bottom: 1em; line-height: 1.6; }
+        .markdown-body ul { list-style-type: disc; margin-left: 1.5em; margin-bottom: 1em; }
+        .markdown-body li { margin-bottom: 0.5em; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .highlight-sentence { background-color: #fef3c7; padding: 2px 4px; border-radius: 4px; cursor: pointer; }
+        .highlight-sentence:hover { background-color: #fde68a; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- API Key Modal -->
+    <div id="apiKeyModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full m-4 border border-slate-200">
+            <div class="text-center mb-6">
+                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-robot text-blue-600 text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">TOEFL AI Trainer</h2>
+                <p class="text-slate-500 text-sm mt-2">2025 新标准 | Gemini 2.5 驱动</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Google Gemini API Key</label>
+                    <input type="password" id="inputApiKey" placeholder="输入你的 API Key (以 AIza 开头)" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
+                    <p class="text-xs text-slate-400 mt-1">Key 仅保存在本地浏览器中，不会上传至服务器。</p>
+                </div>
+                <button onclick="saveApiKey()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition flex items-center justify-center gap-2">
+                    <span>开始刷题</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <div class="text-center">
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-xs text-blue-500 hover:underline">没有 Key? 点击获取</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-6 shrink-0 z-10">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 text-white w-8 h-8 rounded flex items-center justify-center font-bold">T</div>
+            <h1 class="font-bold text-lg hidden sm:block">TOEFL AI Trainer <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-normal">2025 Pro</span></h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <button onclick="resetApp()" class="text-sm text-slate-500 hover:text-red-500 transition" title="清除 Key 并重置"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- Sidebar Navigation -->
+        <nav class="w-20 sm:w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 transition-all duration-300 overflow-y-auto">
+            <div class="p-4 space-y-2">
+                <!-- Reading -->
+                <button onclick="switchSection('reading')" id="nav-reading" class="nav-btn w-full text-left p-3 rounded-lg hover:bg-slate-50 text-slate-600 flex items-center gap-3 transition border border-transparent">
+                    <i class="fas fa-book-open w-6 text-center"></i>
+                    <div class="hidden sm:block text-sm">
+                        <span class="font-bold block">Reading</span>
+                        <span class="text-xs text-slate-400">10 Questions</span>
+                    </div>
+                </button>
+                
+                <!-- Listening -->
+                <button onclick="switchSection('listening')" id="nav-listening" class="nav-btn w-full text-left p-3 rounded-lg hover:bg-slate-50 text-slate-600 flex items-center gap-3 transition border border-transparent">
+                    <i class="fas fa-headphones w-6 text-center"></i>
+                    <div class="hidden sm:block text-sm">
+                        <span class="font-bold block">Listening</span>
+                        <span class="text-xs text-slate-400">Lecture / Conv.</span>
+                    </div>
+                </button>
+                
+                <!-- Speaking Group -->
+                <div class="pt-2 pb-1 px-3 text-xs font-bold text-slate-400 uppercase hidden sm:block">Speaking</div>
+                <button onclick="switchSection('speaking_task1')" id="nav-speaking_task1" class="nav-btn w-full text-left p-2 pl-3 rounded-lg hover:bg-slate-50 text-slate-600 flex items-center gap-3 transition border border-transparent">
+                    <i class="fas fa-user w-6 text-center text-xs"></i>
+                    <span class="hidden sm:block text-sm">Task 1: 独立口语</span>
+                </button>
+                <button onclick="switchSection('speaking_task2')" id="nav-speaking_task2" class="nav-btn w-full text-left p-2 pl-3 rounded-lg hover:bg-slate-50 text-slate-600 flex items-center gap-3 transition border border-transparent">
+                    <i class="fas fa-university w-6 text-center text-xs"></i>
+                    <span class="hidden sm:block text-sm">Task 2: 校园综合</span>
+                </button>
+                <button onclick="switchSection('speaking_task3')" id="nav-speaking_task3" class="nav-btn w-full text-left p-2 pl-3 rounded-lg hover:bg-slate-50 text-slate-600 flex items-center gap-3 transition border border-transparent">
+                    <i class="fas fa-chalkboard-teacher w-6 text-center text-xs"></i>
+                    <span class="hidden sm:block text-sm">Task 3: 学术概念</span>
+                </button>
+                <button onclick="switchSection('speaking_task4')" id="nav-speaking_task4" class="nav-btn w-full text-left p-2 pl-3 rounded-lg hover:bg-slate-50 text-slate-600 flex items-center gap-3 transition border border-transparent">
+                    <i class="fas fa-brain w-6 text-center text-xs"></i>
+                    <span class="hidden sm:block text-sm">Task 4: 学术讲座</span>
+                </button>
+
+                <!-- Writing Group -->
+                <div class="pt-2 pb-1 px-3 text-xs font-bold text-slate-400 uppercase hidden sm:block">Writing</div>
+                <button onclick="switchSection('writing_task1')" id="nav-writing_task1" class="nav-btn w-full text-left p-2 pl-3 rounded-lg hover:bg-slate-50 text-slate-600 flex items-center gap-3 transition border border-transparent">
+                    <i class="fas fa-comments w-6 text-center text-xs"></i>
+                    <span class="hidden sm:block text-sm">Task 1: 学术讨论</span>
+                </button>
+                <button onclick="switchSection('writing_task2')" id="nav-writing_task2" class="nav-btn w-full text-left p-2 pl-3 rounded-lg hover:bg-slate-50 text-slate-600 flex items-center gap-3 transition border border-transparent">
+                    <i class="fas fa-pencil-alt w-6 text-center text-xs"></i>
+                    <span class="hidden sm:block text-sm">Task 2: 综合写作</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Content Area -->
+        <main class="flex-1 relative bg-slate-50 flex flex-col overflow-hidden">
+            
+            <!-- Welcome Screen -->
+            <div id="welcome-screen" class="absolute inset-0 flex flex-col items-center justify-center text-center p-8 z-0">
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-lg">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-800">2025 托福备考 AI 助手</h2>
+                    <p class="text-slate-600 mb-6">全面更新以支持最新题型：Prose Summary, 句子插入, 综合口语/写作。</p>
+                    <div class="grid grid-cols-2 gap-4 text-sm text-left">
+                        <div class="p-3 bg-blue-50 rounded text-blue-700"><i class="fas fa-check mr-2"></i>Task 1-4 全口语题型</div>
+                        <div class="p-3 bg-blue-50 rounded text-blue-700"><i class="fas fa-check mr-2"></i>综合写作 (读+听+写)</div>
+                        <div class="p-3 bg-blue-50 rounded text-blue-700"><i class="fas fa-check mr-2"></i>六选三阅读总结题</div>
+                        <div class="p-3 bg-blue-50 rounded text-blue-700"><i class="fas fa-check mr-2"></i>AI 实时评分反馈</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Content Container -->
+            <div id="app-container" class="flex-1 flex flex-col h-full hidden z-10">
+                
+                <!-- Generation Control -->
+                <div class="bg-white border-b border-slate-200 p-4 flex justify-between items-center shadow-sm shrink-0">
+                    <div>
+                        <h2 id="section-title" class="text-xl font-bold text-slate-800">Section</h2>
+                        <p id="section-desc" class="text-xs text-slate-500">Description</p>
+                    </div>
+                    <div class="flex gap-2">
+                         <div id="sub-type-selector" class="hidden">
+                            <!-- Dynamic Select for Listening type -->
+                             <select id="listening-type-select" class="bg-slate-100 border-none rounded px-3 py-2 text-sm">
+                                 <option value="lecture">Lecture (讲座)</option>
+                                 <option value="conversation">Conversation (对话)</option>
+                             </select>
+                         </div>
+                        <button onclick="generateQuestion()" id="generate-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium transition flex items-center gap-2 shadow-sm">
+                            <i class="fas fa-magic"></i> 生成题目
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Workspace -->
+                <div class="flex-1 overflow-hidden flex flex-col lg:flex-row">
+                    
+                    <!-- Left Panel (Material/Question) -->
+                    <div id="material-panel" class="flex-1 overflow-y-auto p-6 border-r border-slate-200 bg-white relative">
+                        <div id="loading-indicator" class="hidden absolute inset-0 bg-white/90 z-20 flex flex-col items-center justify-center">
+                            <div class="loader mb-4"></div>
+                            <p class="text-slate-600 animate-pulse">正在生成 (Gemini 2.5) - 综合题型耗时稍长...</p>
+                        </div>
+                        
+                        <div id="content-display" class="markdown-body max-w-3xl mx-auto">
+                            <div class="text-slate-400 text-center mt-20">
+                                <i class="fas fa-arrow-up mb-4 text-3xl"></i>
+                                <p>选择左侧题型并生成题目</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Integrated Task Control Panel (Reading/Listening Toggle) -->
+                        <div id="integrated-controls" class="hidden mt-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                            <h3 class="text-xs font-bold text-slate-500 uppercase mb-3">综合任务控制</h3>
+                            <div class="flex gap-3 flex-wrap">
+                                <button onclick="toggleReadingMaterial()" id="toggle-reading-btn" class="px-4 py-2 bg-white border border-slate-300 rounded hover:bg-slate-50 text-sm flex items-center gap-2">
+                                    <i class="fas fa-book"></i> 显示/隐藏 阅读材料
+                                </button>
+                                
+                                <button onclick="toggleSpeech()" id="play-btn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm flex items-center gap-2">
+                                    <i class="fas fa-play"></i> <span id="play-text">播放听力材料</span>
+                                </button>
+                            </div>
+                            <div id="speaking-animation" class="hidden flex gap-1 items-center h-4 mt-3 ml-1">
+                                <div class="w-1 h-full bg-blue-500 animate-pulse"></div>
+                                <div class="w-1 h-2/3 bg-blue-500 animate-pulse" style="animation-delay: 0.1s"></div>
+                                <div class="w-1 h-full bg-blue-500 animate-pulse" style="animation-delay: 0.2s"></div>
+                                <span class="text-xs text-blue-600 ml-2">正在播放...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel (Input/Feedback) -->
+                    <div id="input-panel" class="flex-1 lg:w-[45%] flex flex-col bg-slate-50 h-full overflow-hidden">
+                        
+                        <!-- Timer & Status -->
+                        <div class="h-12 bg-white border-b border-slate-200 flex items-center justify-between px-4 shrink-0">
+                            <div class="flex items-center gap-2 text-slate-600">
+                                <i class="fas fa-clock"></i>
+                                <span id="timer-display" class="font-mono font-bold">00:00</span>
+                            </div>
+                            <div id="word-count" class="text-xs text-slate-400 hidden">0 words</div>
+                        </div>
+
+                        <!-- User Input Area -->
+                        <div class="flex-1 p-4 overflow-y-auto flex flex-col">
+                            <!-- Text Input (Reading/Writing) -->
+                            <textarea id="text-input" class="w-full h-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none font-mono text-sm bg-white shadow-sm" placeholder="在此输入你的答案..."></textarea>
+                            
+                            <!-- Speaking Input Controls -->
+                            <div id="speaking-controls" class="hidden flex flex-col items-center justify-center h-full space-y-6">
+                                <div id="mic-status" class="text-slate-400 font-medium">点击麦克风开始答题</div>
+                                <button onclick="toggleRecording()" id="mic-btn" class="w-20 h-20 rounded-full bg-slate-200 text-slate-500 hover:bg-red-100 hover:text-red-500 transition flex items-center justify-center text-3xl shadow-inner border-4 border-white">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <p class="text-xs text-slate-400 max-w-xs text-center">录音将转为文本进行 AI 评分。</p>
+                                <div class="text-xs text-slate-400 p-2 border border-dashed border-slate-300 rounded w-full max-w-sm h-24 overflow-y-auto" id="speech-preview">
+                                    (实时转写预览...)
+                                </div>
+                            </div>
+
+                            <!-- Feedback Display -->
+                            <div id="feedback-display" class="hidden bg-white p-6 rounded-lg border border-slate-200 shadow-sm h-full overflow-y-auto markdown-body">
+                                <!-- Content injected by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Action Footer -->
+                        <div class="p-4 bg-white border-t border-slate-200 shrink-0 flex justify-end gap-3">
+                             <button onclick="resetInput()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition text-sm">重置</button>
+                            <button onclick="submitAnswer()" id="submit-btn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold transition shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fas fa-paper-plane"></i> 提交评估
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- Application State ---
+        const state = {
+            apiKey: localStorage.getItem('gemini_api_key') || '',
+            currentSection: 'reading', // 'reading', 'listening', 'speaking_task1' ...
+            currentQuestionData: null,
+            isGenerating: false,
+            isRecording: false,
+            isPlayingAudio: false,
+            recognition: null,
+            synthesis: window.speechSynthesis,
+            utterance: null,
+            timerInterval: null,
+            seconds: 0
+        };
+
+        // --- Prompt Configs (2025 Standard) ---
+        const SECTION_CONFIG = {
+            reading: {
+                title: "Reading Section (2025)",
+                desc: "1篇文章 + 6道代表性题目 (含 Prose Summary & Sentence Insertion)",
+                prompt: `Generate a TOEFL Reading passage (approx 300 words) on an academic topic (Biology, Astronomy, or History). 
+                Generate exactly 6 questions in this order:
+                1. Vocabulary (Synonym in context).
+                2. Factual Information (Detail).
+                3. Inference.
+                4. Rhetorical Purpose.
+                5. Sentence Insertion (Provide the sentence and indicate 4 positions [A], [B], [C], [D] in the text).
+                6. Prose Summary (Provide 6 summary options, 3 correct).
+                
+                IMPORTANT: For the "Sentence Insertion" question, embed markers [A], [B], [C], [D] inside the passage text so the user can see where to insert.
+                
+                Output JSON structure:
+                {
+                    "topic": "...",
+                    "passage": "Full passage with [A], [B]... markers",
+                    "questions": [
+                        { "id": 1, "type": "vocab", "question": "...", "options": ["A", "B", "C", "D"], "correct": "A" },
+                        { "id": 5, "type": "insertion", "question": "Where would the sentence '...' best fit?", "options": ["[A]", "[B]", "[C]", "[D]"], "correct": "[A]" },
+                        { "id": 6, "type": "summary", "question": "Select 3 choices...", "options": ["1. ..", "2. ..", "3. ..", "4. ..", "5. ..", "6. .."], "correct": ["1", "3", "5"] }
+                    ]
+                }`
+            },
+            listening: {
+                title: "Listening Section",
+                desc: "Lectures (3-5min) or Conversations (3min).",
+                // Prompt dynamically constructed based on select box
+                basePrompt: `Generate a TOEFL Listening script.
+                Output JSON:
+                {
+                    "topic": "...",
+                    "script": "Full transcript...",
+                    "questions": [
+                        { "id": 1, "question": "...", "options": ["..."], "correct": "..." },
+                        { "id": 2, "question": "...", "options": ["..."], "correct": "..." },
+                        { "id": 3, "question": "...", "options": ["..."], "correct": "..." }
+                    ]
+                }`
+            },
+            speaking_task1: {
+                title: "Speaking Task 1: Independent",
+                desc: "Personal Preference / Opinion (15s Prep / 45s Speak).",
+                prompt: `Generate a TOEFL Speaking Task 1 prompt.
+                JSON: {
+                    "task_type": "Independent",
+                    "prompt": "Question text...",
+                    "prep_time": 15,
+                    "speak_time": 45
+                }`
+            },
+            speaking_task2: {
+                title: "Speaking Task 2: Campus Integrated",
+                desc: "Read Announcement -> Listen to Conversation -> Speak (30s Prep / 60s Speak).",
+                prompt: `Generate a TOEFL Speaking Task 2 (Campus Situation).
+                1. "reading_text": A short university announcement (approx 100 words, policy change etc).
+                2. "listening_script": A conversation between two students (one agrees or disagrees with reasons).
+                3. "prompt": Question asking to summarize the student's opinion.
+                JSON: { "task_type": "Campus", "reading_text": "...", "listening_script": "...", "prompt": "...", "prep_time": 30, "speak_time": 60 }`
+            },
+            speaking_task3: {
+                title: "Speaking Task 3: Academic Integrated",
+                desc: "Read Term Definition -> Listen to Lecture Example -> Speak (30s Prep / 60s Speak).",
+                prompt: `Generate a TOEFL Speaking Task 3 (Academic Topic).
+                1. "reading_text": A paragraph defining an academic concept (approx 100 words).
+                2. "listening_script": A professor giving a specific example of this concept.
+                3. "prompt": Question asking to explain the concept using the example.
+                JSON: { "task_type": "Academic Concept", "reading_text": "...", "listening_script": "...", "prompt": "...", "prep_time": 30, "speak_time": 60 }`
+            },
+            speaking_task4: {
+                title: "Speaking Task 4: Academic Lecture",
+                desc: "Listen to Lecture -> Summarize (20s Prep / 60s Speak).",
+                prompt: `Generate a TOEFL Speaking Task 4 (Academic Lecture).
+                1. "listening_script": A short lecture on an academic topic (approx 250 words).
+                2. "prompt": Question asking to summarize the points made.
+                JSON: { "task_type": "Academic Lecture", "reading_text": null, "listening_script": "...", "prompt": "...", "prep_time": 20, "speak_time": 60 }`
+            },
+            writing_task1: {
+                title: "Writing Task 1: Academic Discussion",
+                desc: "New 2025 Type. Prof Question + 2 Students. (10 min)",
+                prompt: `Generate a TOEFL Writing "Academic Discussion" task.
+                1. Professor's question.
+                2. Student A opinion.
+                3. Student B opinion.
+                JSON: { 
+                    "task_type": "Academic Discussion", 
+                    "professor": "...", 
+                    "student_a": "...", 
+                    "student_b": "...", 
+                    "instructions": "Your contribution..." 
+                }`
+            },
+            writing_task2: {
+                title: "Writing Task 2: Integrated",
+                desc: "Read Passage -> Listen to Refutation -> Write Summary (20 min).",
+                prompt: `Generate a TOEFL Integrated Writing Task.
+                1. "reading_text": Academic passage with main point and 3 supporting arguments (approx 250 words).
+                2. "listening_script": Lecture where professor casts doubt on the 3 arguments (refutation).
+                3. "prompt": Question asking to summarize the lecture points and how they challenge the reading.
+                JSON: { 
+                    "task_type": "Integrated Writing", 
+                    "reading_text": "...", 
+                    "listening_script": "...", 
+                    "prompt": "..." 
+                }`
+            }
+        };
+
+        // --- Initialization ---
+        window.addEventListener('DOMContentLoaded', () => {
+            if (state.apiKey) {
+                document.getElementById('apiKeyModal').classList.add('hidden');
+                initApp();
+            }
+            setupSpeechRecognition();
+        });
+
+        function saveApiKey() {
+            const input = document.getElementById('inputApiKey').value.trim();
+            if (input.length > 10) {
+                localStorage.setItem('gemini_api_key', input);
+                state.apiKey = input;
+                document.getElementById('apiKeyModal').classList.add('hidden');
+                initApp();
+            } else {
+                alert("请输入有效的 API Key");
+            }
+        }
+
+        function resetApp() {
+            localStorage.removeItem('gemini_api_key');
+            location.reload();
+        }
+
+        function initApp() {
+            switchSection('reading');
+        }
+
+        // --- Navigation ---
+        function switchSection(sectionId) {
+            state.currentSection = sectionId;
+            
+            // Update Sidebar
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-50', 'text-blue-700', 'border-blue-200');
+                btn.classList.add('border-transparent');
+            });
+            const activeBtn = document.getElementById(`nav-${sectionId}`);
+            if(activeBtn) {
+                activeBtn.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-200');
+                activeBtn.classList.remove('border-transparent');
+            }
+
+            // Update Header & Config
+            const config = SECTION_CONFIG[sectionId];
+            document.getElementById('section-title').innerText = config.title;
+            document.getElementById('section-desc').innerText = config.desc;
+
+            // Reset UI
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            document.getElementById('content-display').innerHTML = `<div class="text-slate-400 text-center mt-20"><i class="fas fa-magic mb-4 text-3xl text-blue-300"></i><p>点击生成题目</p></div>`;
+            document.getElementById('feedback-display').classList.add('hidden');
+            document.getElementById('text-input').value = '';
+            document.getElementById('speech-preview').innerText = '';
+
+            // Sub-controls visibility
+            document.getElementById('sub-type-selector').classList.add('hidden');
+            document.getElementById('integrated-controls').classList.add('hidden');
+            
+            stopAudio();
+            stopRecording();
+            stopTimer();
+            document.getElementById('timer-display').innerText = "00:00";
+
+            // Configure Mode Specifics
+            const textInput = document.getElementById('text-input');
+            const speakControls = document.getElementById('speaking-controls');
+            const wordCount = document.getElementById('word-count');
+
+            // Default State
+            textInput.classList.remove('hidden');
+            speakControls.classList.add('hidden');
+            wordCount.classList.add('hidden');
+
+            if (sectionId === 'listening') {
+                document.getElementById('sub-type-selector').classList.remove('hidden');
+            } 
+            else if (sectionId.startsWith('speaking')) {
+                textInput.classList.add('hidden');
+                speakControls.classList.remove('hidden');
+                if (sectionId !== 'speaking_task1') {
+                    // Tasks 2, 3, 4 need audio
+                    document.getElementById('integrated-controls').classList.remove('hidden');
+                    // Task 4 doesn't have reading, only audio
+                    if (sectionId === 'speaking_task4') {
+                        document.getElementById('toggle-reading-btn').classList.add('hidden');
+                    } else {
+                        document.getElementById('toggle-reading-btn').classList.remove('hidden');
+                    }
+                } else {
+                     document.getElementById('integrated-controls').classList.add('hidden');
+                }
+            } 
+            else if (sectionId.startsWith('writing')) {
+                wordCount.classList.remove('hidden');
+                if (sectionId === 'writing_task2') {
+                    document.getElementById('integrated-controls').classList.remove('hidden');
+                    document.getElementById('toggle-reading-btn').classList.remove('hidden');
+                }
+                
+                textInput.oninput = () => {
+                    const count = textInput.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+                    wordCount.innerText = `${count} words`;
+                };
+            }
+        }
+
+        // --- Gemini Interaction ---
+        async function generateQuestion() {
+            if (state.isGenerating) return;
+            
+            state.isGenerating = true;
+            document.getElementById('loading-indicator').classList.remove('hidden');
+            document.getElementById('generate-btn').disabled = true;
+            document.getElementById('feedback-display').classList.add('hidden');
+            document.getElementById('content-display').innerHTML = '';
+
+            let prompt = SECTION_CONFIG[state.currentSection].prompt;
+            
+            // Custom handling for Listening select
+            if (state.currentSection === 'listening') {
+                const type = document.getElementById('listening-type-select').value;
+                const typeDesc = type === 'lecture' ? 'Academic Lecture (approx 400 words)' : 'Campus Conversation (approx 300 words)';
+                prompt = SECTION_CONFIG.listening.basePrompt.replace('TOEFL Listening script', `TOEFL Listening ${typeDesc}`);
+            }
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${state.apiKey}`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
+                });
+                
+                const data = await response.json();
+                if(!data.candidates) throw new Error("No data");
+                const result = JSON.parse(data.candidates[0].content.parts[0].text);
+                
+                state.currentQuestionData = result;
+                renderContent(result);
+                startTimer();
+
+            } catch (e) {
+                console.error(e);
+                alert("生成失败，请重试。");
+            } finally {
+                state.isGenerating = false;
+                document.getElementById('loading-indicator').classList.add('hidden');
+                document.getElementById('generate-btn').disabled = false;
+            }
+        }
+
+        function renderContent(data) {
+            const display = document.getElementById('content-display');
+            let html = '';
+
+            // 1. READING
+            if (state.currentSection === 'reading') {
+                // Highlight [A] [B] tags for better UI
+                let safePassage = data.passage.replace(/\[([A-D])\]/g, '<span class="font-bold text-blue-600 bg-blue-100 px-1 rounded">[$1]</span>');
+                
+                html += `<h1 class="text-2xl mb-2">${data.topic}</h1>`;
+                html += `<div class="bg-white p-5 rounded border border-slate-100 text-justify leading-relaxed shadow-sm text-lg font-serif mb-8">${safePassage.replace(/\n/g, '<br>')}</div>`;
+                
+                html += `<div class="space-y-8">`;
+                data.questions.forEach(q => {
+                    html += `<div class="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                        <div class="flex gap-2 mb-2">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded h-fit whitespace-nowrap">${q.type || 'Question'}</span>
+                            <p class="font-semibold text-slate-800">${q.id}. ${q.question}</p>
+                        </div>`;
+                    
+                    if (q.type === 'summary') {
+                        // Checkbox for Summary
+                        html += `<div class="space-y-2 ml-2">`;
+                        q.options.forEach((opt, idx) => {
+                            html += `<div class="flex items-start gap-2">
+                                <div class="mt-1 min-w-[20px] border border-slate-400 rounded text-xs text-center font-bold text-slate-500">${idx+1}</div>
+                                <span class="text-sm text-slate-700">${opt}</span>
+                            </div>`;
+                        });
+                        html += `</div><p class="text-xs text-slate-400 mt-2 ml-2">(Select 3 choices in your answer)</p>`;
+                    } else {
+                        // Standard options
+                        html += `<ul class="space-y-1 ml-2 text-sm text-slate-600">`;
+                        q.options.forEach(opt => html += `<li>${opt}</li>`);
+                        html += `</ul>`;
+                    }
+                    html += `</div>`;
+                });
+                html += `</div>`;
+            }
+
+            // 2. LISTENING
+            else if (state.currentSection === 'listening') {
+                html += `<h1 class="text-xl font-bold mb-4">${data.topic}</h1>`;
+                html += `<div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-blue-700">
+                    <p><i class="fas fa-headphones mr-2"></i>Audio Script Ready. Click "Play" in the controls below (if visible) or Reading panel.</p>
+                </div>`;
+                // Show controls explicitly for listening section in the main panel 
+                html += `<button onclick="toggleSpeech()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-6"><i class="fas fa-play mr-2"></i>Play Audio</button>`;
+                
+                html += `<div class="space-y-6 opacity-50 hover:opacity-100 transition-opacity duration-500">`;
+                data.questions.forEach(q => {
+                     html += `<div class="p-3 bg-white rounded border border-slate-200">
+                        <p class="font-semibold mb-2">${q.id}. ${q.question}</p>
+                        <ul class="space-y-1 text-sm text-slate-600">${q.options.map(o => `<li>${o}</li>`).join('')}</ul>
+                     </div>`;
+                });
+                html += `</div>`;
+            }
+
+            // 3. SPEAKING & WRITING (Integrated)
+            else {
+                // Prompt / Question
+                if (data.prompt) {
+                    html += `<div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-6">
+                        <h3 class="font-bold text-yellow-800 mb-1 uppercase text-xs">Question</h3>
+                        <p class="text-lg font-semibold text-slate-800">${data.prompt}</p>
+                    </div>`;
+                }
+
+                // Reading Material (If exists)
+                if (data.reading_text) {
+                    html += `<div id="reading-content" class="mb-6 transition-all duration-300">
+                        <h3 class="font-bold text-slate-400 uppercase text-xs mb-2"><i class="fas fa-book mr-1"></i> Reading Material</h3>
+                        <div class="bg-white p-4 rounded border border-slate-200 text-justify font-serif leading-relaxed">
+                            ${data.reading_text}
+                        </div>
+                    </div>`;
+                }
+
+                // Specific Layout for Writing Task 1
+                if (state.currentSection === 'writing_task1') {
+                    html += `<div class="bg-slate-100 p-4 rounded mb-4 border-l-4 border-blue-500"><strong>Professor:</strong> ${data.professor}</div>`;
+                    html += `<div class="grid grid-cols-1 gap-4 mb-4">
+                        <div class="bg-white p-3 rounded border shadow-sm"><strong class="text-blue-600">Student A:</strong> ${data.student_a}</div>
+                        <div class="bg-white p-3 rounded border shadow-sm"><strong class="text-green-600">Student B:</strong> ${data.student_b}</div>
+                    </div>`;
+                }
+                
+                // Specific Layout for Listening (Hidden Script)
+                if (data.listening_script) {
+                    html += `<div class="mt-4 p-2 bg-slate-100 text-xs text-slate-400 rounded border border-slate-200 hidden">
+                        DEBUG: Script loaded (${data.listening_script.length} chars)
+                    </div>`;
+                }
+            }
+
+            display.innerHTML = html;
+        }
+
+        // --- Integrated Task UI Logic ---
+        function toggleReadingMaterial() {
+            const el = document.getElementById('reading-content');
+            if (el) {
+                el.classList.toggle('hidden');
+            }
+        }
+
+        // --- Audio System ---
+        function toggleSpeech() {
+            const script = state.currentQuestionData?.listening_script || state.currentQuestionData?.script;
+            if (!script) {
+                alert("No audio script available for this task.");
+                return;
+            }
+
+            if (state.isPlayingAudio) {
+                stopAudio();
+            } else {
+                state.utterance = new SpeechSynthesisUtterance(script);
+                state.utterance.lang = 'en-US';
+                state.utterance.rate = 1.0;
+                state.utterance.onend = () => {
+                    state.isPlayingAudio = false;
+                    updateAudioUI(false);
+                };
+                state.synthesis.speak(state.utterance);
+                state.isPlayingAudio = true;
+                updateAudioUI(true);
+            }
+        }
+
+        function stopAudio() {
+            state.synthesis.cancel();
+            state.isPlayingAudio = false;
+            updateAudioUI(false);
+        }
+
+        function updateAudioUI(isPlaying) {
+            const text = document.getElementById('play-text');
+            const icon = document.querySelector('#play-btn i');
+            const anim = document.getElementById('speaking-animation');
+
+            if (isPlaying) {
+                if(text) text.innerText = "停止播放";
+                if(icon) icon.className = "fas fa-stop";
+                if(anim) anim.classList.remove('hidden');
+            } else {
+                if(text) text.innerText = "播放听力材料";
+                if(icon) icon.className = "fas fa-play";
+                if(anim) anim.classList.add('hidden');
+            }
+        }
+
+        // --- Recording System ---
+        function setupSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                state.recognition = new SpeechRecognition();
+                state.recognition.continuous = true;
+                state.recognition.interimResults = true;
+                state.recognition.lang = 'en-US';
+
+                state.recognition.onresult = (event) => {
+                    let interim = '';
+                    let final = '';
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) final += event.results[i][0].transcript;
+                        else interim += event.results[i][0].transcript;
+                    }
+                    const preview = document.getElementById('speech-preview');
+                    const input = document.getElementById('text-input');
+                    
+                    if (final) {
+                        input.value += (input.value ? ' ' : '') + final;
+                    }
+                    preview.innerText = interim || (input.value.slice(-50) + "...");
+                };
+                
+                state.recognition.onerror = (e) => { 
+                    console.error(e); 
+                    stopRecording();
+                };
+            }
+        }
+
+        function toggleRecording() {
+            state.isRecording ? stopRecording() : startRecording();
+        }
+
+        function startRecording() {
+            if (!state.recognition) return alert("Browser not supported");
+            state.isRecording = true;
+            state.recognition.start();
+            const btn = document.getElementById('mic-btn');
+            btn.classList.add('bg-red-100', 'text-red-600', 'animate-pulse');
+            btn.innerHTML = '<i class="fas fa-stop"></i>';
+            document.getElementById('mic-status').innerText = "录音中...";
+        }
+
+        function stopRecording() {
+            if (!state.isRecording) return;
+            state.isRecording = false;
+            state.recognition.stop();
+            const btn = document.getElementById('mic-btn');
+            btn.classList.remove('bg-red-100', 'text-red-600', 'animate-pulse');
+            btn.innerHTML = '<i class="fas fa-microphone"></i>';
+            document.getElementById('mic-status').innerText = "录音完成";
+        }
+
+        // --- Submission & Grading ---
+        async function submitAnswer() {
+            const input = document.getElementById('text-input').value.trim();
+            if (!input) return alert("Please enter an answer.");
+            
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 评估中...';
+
+            // Contextual Grading Prompts
+            let gradingPrompt = `Act as a strict TOEFL iBT grader (2025 standards).
+            Section: ${state.currentSection}.
+            Question Data: ${JSON.stringify(state.currentQuestionData)}.
+            User Answer/Transcript: "${input}".
+            
+            Provide JSON output: {
+                "score": "String (e.g. 24/30 or 3/4)",
+                "feedback": "General feedback string",
+                "details": "Specific improvements or correct answers explanation",
+                "sample": "A high-scoring sample response (if applicable)"
+            }`;
+
+            if (state.currentSection.startsWith('reading')) {
+                 gradingPrompt += ` For Reading, check if user selected correct options. For Prose Summary, they need 3 correct out of 6.`;
+            } else if (state.currentSection === 'writing_task2') {
+                 gradingPrompt += ` For Integrated Writing, check if the user accurately summarized the lecture's counter-arguments to the reading passage. Do not evaluate personal opinion.`;
+            }
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${state.apiKey}`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: gradingPrompt }] }],
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
+                });
+                
+                const data = await response.json();
+                const result = JSON.parse(data.candidates[0].content.parts[0].text);
+                
+                const fbDiv = document.getElementById('feedback-display');
+                fbDiv.innerHTML = `
+                    <div class="flex items-center justify-between mb-4 border-b pb-2">
+                        <h3 class="text-xl font-bold text-slate-800">评估结果</h3>
+                        <span class="text-2xl font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded">${result.score}</span>
+                    </div>
+                    <div class="space-y-4">
+                        <div><strong class="text-slate-700">评价:</strong> <p class="text-sm text-slate-600">${result.feedback}</p></div>
+                        <div><strong class="text-slate-700">详细建议:</strong> <p class="text-sm text-slate-600">${result.details}</p></div>
+                        ${result.sample ? `<div class="bg-green-50 p-3 rounded border border-green-100"><strong class="text-green-800">范例:</strong> <p class="text-xs text-green-700 italic mt-1">${result.sample}</p></div>` : ''}
+                    </div>
+                `;
+                fbDiv.classList.remove('hidden');
+                document.getElementById('text-input').classList.add('hidden');
+                document.getElementById('speaking-controls').classList.add('hidden');
+
+            } catch (e) {
+                console.error(e);
+                alert("评估失败");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> 提交评估';
+            }
+        }
+
+        // --- Timer ---
+        function startTimer() {
+            stopTimer();
+            state.seconds = 0;
+            state.timerInterval = setInterval(() => {
+                state.seconds++;
+                const m = String(Math.floor(state.seconds/60)).padStart(2,'0');
+                const s = String(state.seconds%60).padStart(2,'0');
+                document.getElementById('timer-display').innerText = `${m}:${s}`;
+            }, 1000);
+        }
+        function stopTimer() { clearInterval(state.timerInterval); }
+
+        function resetInput() {
+            document.getElementById('text-input').value = '';
+            document.getElementById('text-input').classList.remove('hidden');
+            document.getElementById('feedback-display').classList.add('hidden');
+            document.getElementById('speech-preview').innerText = '';
+            if (state.currentSection.startsWith('speaking')) {
+                document.getElementById('text-input').classList.add('hidden');
+                document.getElementById('speaking-controls').classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
